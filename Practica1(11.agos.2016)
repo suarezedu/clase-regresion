@@ -13,3 +13,14 @@ table(edad)
 detach(base1.1)
 table(edad)
 summary(base1.1$edad)
+
+## IMPORTAR BASE DE DATOS ##
+## PARA IMPORTAR LA BASE DE DATOS SE UTILIZA EL PAQUETE
+## foreign
+
+install.packages("foreign")
+require(foreign)
+
+sociodem <- read.dbf("C://Users//SALA-C3//Desktop//SDEMT215.dbf")
+sociodem
+table(sociodem$SEX)
