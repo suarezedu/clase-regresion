@@ -1,0 +1,21 @@
+v<-c(1,2)
+v
+y<-c(1.2,1.23,1.19,1.32,1.28,1.22,1.17,1.29,1.33,1.15)
+x<-c(110,130,108,167,156,115,104,138,170,107)
+plot(x,y,pch="?",xlab="ingreso economico",ylab="estatura",main="grafica de dispersion",col="blue")
+##sacar la grafica de dispersion 
+##coeficiente de correlacion
+cor(y,x,method="pearson")
+##realizar prueba de hipotesis
+#Ho=0 no hay relacion
+#H1=!0 si hay relacion
+cor.test(y,x,method="pearson")
+#si el p-value es menor a .05 no aceptamos Ho
+##aplicacion del modelo de regresion simple
+mod1<-lm(y~x)
+summary(mod1)
+#los residuales nos generan las diferencias entre los valores ajustados y los reales
+#en los resultados tenemos los coeficientes que con
+plot(x,y,pch="?",xlab="estatura",ylab="ingresos",main="grafica de dispersion")
+abline(mod1)
+y=.9323+.0023x
