@@ -1,0 +1,47 @@
+y<-c(1.2,1.23,1.19,1.32,1.28,1.22,1.17,1.29,1.33,1.15)
+x<-c(110,130,108,167,156,115,104,138,170,107)
+plot(x,y,pch="?",xlab="ingreso economico",ylab="estatura",main="grafica de dispersion",col="blue")
+##sacar la grafica de dispersion 
+##coeficiente de correlacion
+cor(y,x,method="pearson")
+##realizar prueba de hipotesis
+#Ho=0 no hay relacion
+#H1=!0 si hay relacion
+cor.test(y,x,method="pearson")
+#si el p-value es menor a .05 no aceptamos Ho
+##aplicacion del modelo de regresion simple
+mod1<-lm(y~x)
+summary(mod1)
+#los residuales nos generan las diferencias entre los valores ajustados y los reales
+#en los resultados tenemos los coeficientes que con
+plot(x,y,pch="*",xlab="estatura",ylab="ingresos",main="grafica de dispersion")
+abline(mod1)
+y=.9323+.0023x
+###coeficientes summary(mod1)$coefficients
+## por cada unidad de ingreso aumenta la estatura del niño .0023
+summary(mod1)$coefficients
+##error estandar residual
+## es .0198
+#mide la calidad del modelo, y generamos intervalos de confianza 
+#para calcular el IC se utiliza
+confint(mod1,level=.95)
+##con una probabilidad del 95% b0 se encuentra en el intervalo (.85,1.01)
+#y b1 se encuentra en el intervalo (.001,.002)
+#con la bondad de ajuste verificamos la calidad del modelo 
+#generamos la tabla ANOVA
+anova(mod1)
+#en este caso la variabilidad explicada del modelo es .033022=SSM
+#se revisa la SSR=.0031 se espera que sea 0
+#revisando los valores del summary el estadistico F es mayor a 1 y
+#p-value <.05
+##con estas revisiones se puede mencionar que se rechaza 
+##la hipotesis nula de F=1
+#y se puede establecer un modelo
+#revisar multiple-R squared con .9132 alrededor del 91% de la variabilidad 
+#de la estatura es explicada por la recta ajustada
+
+###SUPUESTOS
+base1 <- data.frame(x,y)
+base1$fitted.mod1 <- fitted(mod1)
+base1$residuals.mod1 <- residuals(mod1)
+base1$rstudent.mod1 <- rstudent(mod1)
