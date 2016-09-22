@@ -1,0 +1,119 @@
+install.packages("car")
+require(car)
+
+########## practica 5 #########################
+est <- c(1.2, 1.23, 1.19, 1.32, 1.28, 1.22, 1.17, 1.29, 1.33, 1.15)
+
+eco <- c(110, 130, 108, 167, 156, 115, 104, 138, 170, 107)
+
+##grafico de dispercion
+
+plot (eco, est, pch = 15, xlab = "ingreso economico",ylab = "estatura", main = "grafica de dispersion",col = "blue")
+     #ind, dep, 
+#xlab = etiqueta
+## dependiente estatura, 
+## queremos comprobar la hipotesis que entre mayor ingreso de la familia 
+#hay ua mayor estatura en los noños
+
+#relacion positiva
+
+#2 funcion cor, calcula el coeficiente de relacion
+  #2.1 var dep
+  #2.2 variable indep
+  #2.3 metodo de correlacion
+cor(est, eco, method = "pearson")
+help (cor)
+#datos hordenales usar kendal
+#3 la prueba hipotesis para esta funcion es ho = r=0 
+#es decir si no hay relacion ha=! 0 si relacion 
+cor.test(est, eco, method= "pearson")
+# si p- value es menos  .05 rechamos la nula
+#4 aplicamos el modelo
+# para alicar modelo se utliza lm()
+#primero y (indep) ~ x(dep)
+
+mod1 <- lm(est~eco)
+summary(mod1)
+##summary lo madamos llamar y nos da los reiduales
+# los asteriscos miden lo significativo que son los coeficientes
+# los residuales nos generan las diferencias entre los valores ajustados y los reales
+#en los resultados tenemos los coeficientes que continen que expone si los coef 
+#son significativo
+#los errores mas cercanos a 0 mejor
+#Y=B0+B1 ecuacion  de la recta "estimate"
+plot (eco, est, pch = 15, xlab = "ingreso economico",ylab ="estatura", main = "grafica de dispercion", col ="darkgreen")
+abline(mod1, col = "coral")
+#abline pone la linea que esta basada en modelo 1
+
+
+base1 <-data.frame(eco,est)
+
+base1$ajuste.mod1 <- fitted(mod1) ###valores ajustado
+base1$residuales.mod1 <- residuals(mod1)###residuos del modelo
+base1$rstudent.mod1 <- rstudent(mod1) ###residuos estudentizados
+View(base1)
+
+##Estas variables se utilizan para comprobar los supuestos...
+###Supuesto de normalidad... es que los residuos tengan unas distribucion normal 
+##para conocer la normalidad se utiliza la prueba de shapiro para analizar los residuos...
+
+shapiro.test(base1$rstudent.mod1)
+
+###prueba de hipotesis shapiro test 
+### Ho. la muestra tienen una dist normal 
+### Ha. la muestra no tiene dist normal 
+### tenemos un pvalue de 0.8172 no se rechaza la hipotesis nula
+### por lo tanto se acepta que hay normalidad...
+### ahora veremos este resultado en un grafico 
+ 
+qqnorm(base1$rstudent.mod1,main ="Normal(0,1)")
+### se obtiene grafico de dispersion con la normal 0,1 
+
+qqline(base1$rstudent.mod1)
+### ahora vamos a revisar la homogeneidad de varianzas 
+### para la homogeneidad se requiere de una libreria que se llama lmtest, debido a que
+### esta se tiene que aplicar la prueba de Breusch -pagan test
+
+install.packages("lmtest")
+require(lmtest)
+bptest(mod1)
+
+### en esta prueba esperamos que haya homogeneidad de la varianza 
+### Ho: si hay homogeneidad en las varianzas 
+### Ha: no hay homogeneidad en las varianzas
+## en la prueba bptest obtenemos un pvalue de 0.6108
+##por lo tanto no se rechaza la hipotesis nula, es decir, se acepta con 95% de confianza la Ho
+## para eso debemos tener un pvalue mayor a 0.05 por lo que para 
+##mod1 se puede decir que hay homogeneidad en las varianzas 
+
+##prueba de autocorrelacion o independencia 
+##en este caso se utiliza la prueba de Durbin Watson..
+##para esta prueba se utiliza:
+
+dwtest(mod1,alternative="two.sided")
+
+##Ho: no hay autocorrelacion en los residuos
+##Ha: si hay autocorrelacion en los residuos 
+
+##la prueba durbin watson genera un resultado de 0.9142
+##por lo que no se rechaza la Ho, debido a que tenemos un pvalue mayor a 0.05
+##esto quiere decir que no hay autocorrelacion de los residuos...
+##otra forma de evaluar la prueba de Durbin Watson es con el valor de Durbin Watson
+##que se espera este en el rango de 1.5 a 2.5
+##Si esta dentro de este rango se puede decir, que no hay autocorrelacion en los residuos
+
+##ahora vamos a comprobar esto de manera grafica 
+plot(base1$residuales.mod1, pch=25, ylab="residuales", xlab= "in",col="pink")
+abline (h=cor (base1$est, base1$eco))
+
+##podemos tener un problema de rangos si predecimos sin considerar rangos
+##de nuestra variable por lo que vamos a definir una nueva base con los limites 
+
+limbase1 <- seq(min(base1$eco), max(base1$eco), length=10)
+limbase1 <- data.frame(limbase1)
+limbasep <- predict.lm(mod1, limbase1, interval="prediction", se.fit=TRUE, data=base1)
+
+head(limbasep$fit) ##te generan los limites 
+##para dibujar dibujar los limites ...
+
+matplot(limbase1, limbasep$fit, type="l", xlab="ingres", ylab="estatura")
