@@ -1,0 +1,35 @@
+install.packages("foreign")
+require(foreign)
+sociodem <- read.dbf("C://Users//SALA-C4//Desktop//sdemt216.dbf")
+View(sociodem)
+class (sociodem$ENT)
+sociodem$ENT<-as.character(as.numeric(sociodem$ENT))
+class (sociodem$ENT)
+ls(sociodem)
+entidad<-subset(sociodem,sociodem$ENT==1)
+table(entidad$ENT)
+View(entidad)
+
+var<-c("ANIOS_ESC","INGOCUP")
+newdata1<-entidad[,var]
+View(newdata1)
+View(newdata1$ANIOS_ESC)
+class (newdata1$ANIOS_ESC)
+newdata1$ANIOS_ESC
+newdata1$INGOCUP
+x<-newdata1$ANIOS_ESC
+y<-newdata1$INGOCUP
+
+plot(x,y,pch="*",xlab="AÑOS DE ESCOLARIDAD",ylab="INGRESO",main="grafica de dispersion",col="blue")
+##coeficiente de correlacion
+cor(y,x,method="pearson")
+##realizar prueba de hipotesis
+#Ho=0 no hay relacion
+#H1=!0 si hay relacion
+cor.test(y,x,method="pearson")
+#si el p-value es menor a .05 no aceptamos Ho
+##aplicacion del modelo de regresion simple
+mod1<-lm(y~x)
+summary(mod1)
+plot(x,y,pch="?",xlab="AÑOS DE ESCOLARIDAD",ylab="INGRESO",main="grafica de dispersion")
+abline(mod1)
