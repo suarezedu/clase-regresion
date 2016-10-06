@@ -1,0 +1,110 @@
+######MODELO DE REGRESION LINEAL MULTIPLE######
+
+capa <-c(4330, 5500, 5500, 4700, 5200, 5500, 4700, 5500, 5800, 5000)  #Independiente (x2)
+calidad <- c(2, 3, 4, 3, 4, 4, 4, 5, 5, 5) #Independiente (x1)
+precio <- c(190, 219, 249, 249, 250, 340, 289, 395, 439, 525) #Dependiente (y)
+plot(capa,precio,pch=12,xlab="capa",ylab="precio",main="grafica de dispersion",col="blue")
+cor(precio,capa,method="pearson")
+cor.test(precio,capa,method="pearson")
+##con estos indicadores rechazamos el modelo simple
+##ahora revisamos con la otra variable que tenemos
+plot(calidad,precio,pch=11,xlab="capa",ylab="precio",main="grafica de dispersion",col="blue")
+cor(precio,calidad,method="pearson")
+cor.test(precio,calidad,method="pearson")
+##comparacion de modelos
+##pretendemos seleccionar al mejor subconjunto de variables independientes
+##en este caso para la aplicacion del MRM tenemos dos variables independientes
+##calidad y capacidad por lo que se propone 
+##comprar tres modelos con la finalidad de aplicar el principio de parsimonia
+##es decir, que se tienen muchas variables intentando explicar el modelo
+##ante estas variables se pueden comparar tres modelos
+#1)precio~capacidad
+#2)precio~calidad
+#3)precio~calidad+capacidad
+##### COMO SELECCIONAMOS EL MEJOR MODELO  ###
+##criterio de la informacion de Akaike(AIC)
+##el problema de utilizar R-cudrada para comparar modelos es que al introducir 
+##nuevas variables al modelo, esta medida siempre crece
+##si estamos decidiendo cual de todos los modelos ajusta mejor a los datos,
+##el modelo con mas variables independientes siempre sera el mejor ajustado
+##por eso se utiliza el AIC, una medida de ajuste que penaliza el modelo
+##por tener mas variables
+##esta definido por AIC=(n)(log(SCR/n))+2k
+##SCR=suma de cuadrados residuales
+##k numero de variables independientes
+##el problema es que el unico criterio para el AIC esi su valor es mayor el modelo es malo
+##si el AIC es mejor el modelo es mejor
+##el AIC nos va a ayudar a decidir sobre un modelo
+####  el metodo mas recomendado es el metodo step by step
+##para R se utiliza la funcion step()
+##adento del metodo de step by step hay tres modalidades
+##1) forward: parte del coeficiente Bo y de ahí va probando las variables
+## independientes para ver cual es la que mas aporta al modelo
+##2) backward: R empieza con todas las v.i. y estudi si el AIC baja 
+## cuando hay cambios de variables
+##3) both: empieza como el forward la diferencia es que se realizan test
+## para conocer el var indep menos util
+####  el metodo mas recomendable es el backward    #####
+#*porque tiene un efecto represor que permite probar cuando una variable tiene
+#*influencia solo si otra var se mantiene constante
+###vamos a calcular el modelo para tres variables
+moch<-data.frame(precio,capa,calidad)
+cor(moch,use="everything",method="pearson")
+mod1<-lm(precio~capa+calidad,data=moch)
+summary(mod1)
+step(mod1,direction="backward")
+step(mod1,direction="both")
+step(mod1,direction="forward")
+
+mochil <- data.frame(precio, capa, calidad)
+modmo <- lm(precio~calidad+capa)
+##***1.PRUEBA DE NORMALIDAD***###
+##PAQUETERIA lmtest
+install.packages("lmtest")
+require(lmtest)
+ks.test(mochil$rstud,"pnorm")
+##se plantea una prueba de hipotesis y se espera un p-value mayor a .05
+##si esto sucede no se rechaza Ho, entonces existe normalidad
+##en este caso el modelo pasa la prueba de normalidad
+##***2.HOMOGENEIDAD DE VARIANZAS ***###
+##se realiza con la funcion bptest
+bptest(modmo,studentize=FALSE,data=mochil)##studentize=FALSE no toma los R student()
+##como p-value>.05 pasa la prueba de homogeneidad de las varianzas 
+##***3.AUTOCORRELACION ***###
+##la funcion para esta prueba es dw()
+dwtest(modmo,alternative="two.sided",data=mochil)
+##en esta prueba hay dos formas de comprobar 
+##1)el p-value>.05
+##2)el valor de la Durbin-Watson(rango aceptable 1.5 a 2.5)
+##hasta aqui podriamos confirmar que no hay correlacion entre los residuos 
+##con estas pruebas se confirma que tenemos un modelo
+##con buen ajuste sin embargo hay que revisar los casos atipicos
+##para revisar esto, se usa la libreria car 
+install.packages("car")
+require("car")
+outlierTest(modmo)
+outlier.test(modmo)
+##una vez que observamos los casos atipicos
+##procedemos a conocer la influencia de estos en el modelo
+##se utiliza la fucion influence.measures()
+influ<-influence.measures(modmo)
+summary(influ)
+##en la primera columna se observa que los casos mas influyentes 1,2 y 10
+##las columnas que hacen referencia a dbf nos indican 
+##la influencia en los coeficientes del modelo
+##las columnas que presentan mauor interes son las cook.d y hat
+##que nos exponen con mayor claridad la influencia
+##cook.d es la distancia de cook y entre mas cercano a 1 hay mayor influencia de la observacion
+##en este caso la obs 10 es la que tiene mayor distancia de cook, en esta distancia valores 
+##mayores a 1 hay certeza de que si influyen 
+##en la columna de hat se asocia con las medidas de 
+##leverage que varian entre 0 y 1 entre mas cercano a 1 mayor influencia
+##ademas de estas pruebas  se hace el analisis grafico de los casos mas influyentes
+##para esto se utiliza la funcion influenceplot()
+influencePlot(modmo)
+##se analizan las circunferencias que arroja, a mayor circunferencia es cas tiene mayor influencia
+##grafica de distancia de cook, se requiere de la libreria faraway
+install.packages("faraway")
+require(faraway)
+dc<-cooks.distance(modmo)
+etiqueta<-rownames(mochil)
