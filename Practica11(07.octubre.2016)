@@ -1,0 +1,83 @@
+nes (108 sloc)  5.29 KB
+######MODELO DE REGRESION LINEAL MULTIPLE######
+
+capa <-c(4330, 5500, 5500, 4700, 5200, 5500, 4700, 5500, 5800, 5000)  #Independiente (x2)
+calidad <- c(2, 3, 4, 3, 4, 4, 4, 5, 5, 5) #Independiente (x1)
+precio <- c(190, 219, 249, 249, 250, 340, 289, 395, 439, 525) #Dependiente (y)
+plot(capa,precio,pch=12,xlab="capa",ylab="precio",main="grafica de dispersion",col="blue")
+cor(precio,capa,method="pearson")
+cor.test(precio,capa,method="pearson")
+##con estos indicadores rechazamos el modelo simple
+##ahora revisamos con la otra variable que tenemos
+plot(calidad,precio,pch=11,xlab="capa",ylab="precio",main="grafica de dispersion",col="blue")
+cor(precio,calidad,method="pearson")
+cor.test(precio,calidad,method="pearson")
+##comparacion de modelos
+##pretendemos seleccionar al mejor subconjunto de variables independientes
+##en este caso para la aplicacion del MRM tenemos dos variables independientes
+##calidad y capacidad por lo que se propone 
+##comprar tres modelos con la finalidad de aplicar el principio de parsimonia
+##es decir, que se tienen muchas variables intentando explicar el modelo
+##ante estas variables se pueden comparar tres modelos
+#1)precio~capacidad
+#2)precio~calidad
+#3)precio~calidad+capacidad
+##### COMO SELECCIONAMOS EL MEJOR MODELO  ###
+##criterio de la informacion de Akaike(AIC)
+##el problema de utilizar R-cudrada para comparar modelos es que al introducir 
+##nuevas variables al modelo, esta medida siempre crece
+##si estamos decidiendo cual de todos los modelos ajusta mejor a los datos,
+##el modelo con mas variables independientes siempre sera el mejor ajustado
+##por eso se utiliza el AIC, una medida de ajuste que penaliza el modelo
+##por tener mas variables
+##esta definido por AIC=(n)(log(SCR/n))+2k
+##SCR=suma de cuadrados residuales
+##k numero de variables independientes
+##el problema es que el unico criterio para el AIC esi su valor es mayor el modelo es malo
+##si el AIC es mejor el modelo es mejor
+##el AIC nos va a ayudar a decidir sobre un modelo
+####  el metodo mas recomendado es el metodo step by step
+##para R se utiliza la funcion step()
+##adento del metodo de step by step hay tres modalidades
+##1) forward: parte del coeficiente Bo y de ahí va probando las variables
+## independientes para ver cual es la que mas aporta al modelo
+##2) backward: R empieza con todas las v.i. y estudi si el AIC baja 
+## cuando hay cambios de variables
+##3) both: empieza como el forward la diferencia es que se realizan test
+## para conocer el var indep menos util
+####  el metodo mas recomendable es el backward    #####
+#*porque tiene un efecto represor que permite probar cuando una variable tiene
+#*influencia solo si otra var se mantiene constante
+###vamos a calcular el modelo para tres variables
+moch<-data.frame(precio,capa,calidad)
+cor(moch,use="everything",method="pearson")
+mod1<-lm(precio~capa+calidad,data=moch)
+summary(mod1)
+step(mod1,direction="backward")
+step(mod1,direction="both")
+step(mod1,direction="forward")
+
+mochil <- data.frame(precio, capa, calidad)
+modmo <- lm(precio~calidad+capa)
+mod2<-lm(precio~calidad,data=moch)
+summary(mod2)
+##aplicamos los supuestos para ver si
+##tenemos un buen modelo 
+moch$ajus<-fitted(mod2)
+moch$resi<-residuals(mod2)
+moch$rstud<-rstudent(mod2)
+##    ahora probamos el supuesto de normalidad ####
+install.packages("lmtest")
+require(lmtest)
+ks.test(moch$rstud,"pnorm")
+##histograma
+hist(moch$rstud,xlab="residuales",main="Historagra Residuales")
+##****queremos un p-value>.05, tenemos normalidad
+##homogenidad de varianza
+bptest(mod2,studentize=FALSE,data=moch)
+##****queremos un p-value>.05, varianza constante a lo largo de la muestra
+dwtest(mod2,alternative="two.sided",data=moch)
+##****queremos un p-value>.05, no hay correlacion entre los residuos
+##    prueba de atipicos ####
+install.packages("car")
+require(car)
