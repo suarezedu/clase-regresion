@@ -1,0 +1,43 @@
+
+## 0) analizar graficos de dispersion y pruebas de correlacion
+## 1) plantear la ecuacion estimada origina, es decir con todas las variables
+## 2) analizar la anova, r cuadrada, estadistico F (mediante p.h.)
+# 3) comparen modelos ccon backward y analicen el modelo qyue genere la funcion step
+y <-c(25.5, 31.2, 25.9, 38.4, 18.4, 26.7, 26.4,25.9,32,25.2,39.7,35.7,26.5)
+x1<-c(1.74,6.32,6.2,10.52,1.19,1.22,4.10,6.32,4.08,4.15,10.15,1.72,1.70)
+x2<-c( 5.30,5.42,8.41,4.63,11.60,5.85,6.62,8.72,4.42,7.60,4.83,3.12,5.3)
+x3<-c( 10.8,9.4,7.2,8.5,9.4,9.9,8,9.1,8.7,9.2,9.4,7.6,8.2)
+ejercicio<- data.frame(y, x1, x2,x3)
+plot(x1,y,pch=12,xlab="x1",ylab="y",main="ejercicio",col="blue")
+cor(y,x1,method="pearson")
+cor.test(y,x1,method="pearson")
+plot(x2,y,pch=12,xlab="x2",ylab="y",main="ejercicio",col="blue")
+cor(y,x2,method="pearson")
+cor.test(y,x2,method="pearson")
+plot(x3,y,pch=12,xlab="x3",ylab="y",main="ejercicio",col="blue")
+cor(y,x3,method="pearson")
+cor.test(y,x3,method="pearson")
+## correlacion  de x1=.65,x2=-.78,x3=-.18, como la correlacion con x3
+## es cercana a 0, tiene una relacion pequeña con y
+modmo <- lm(y~x1+x2+x3)
+summary(modmo)
+anova(modmo)
+## el resultado de Mean Sq (ANOVA)=4.291
+## el p-value=.00004464<.05
+## el valor de F=31.04>1
+## entonces tenemos un buen modelo
+y=39.1767+1.0166x1-1.8608x2-.3461x3
+step(modmo,direction="backward")
+## de acuerdo AIC nos sugiere eliminar la variable x3
+ejercicio1<- data.frame(y, x1, x2)
+plot(x1,y,pch=12,xlab="x1",ylab="y",main="ejercicio",col="blue")
+cor(y,x1,method="pearson")
+cor.test(y,x1,method="pearson")
+modmo1 <- lm(y~x1+x2)
+summary(modmo1)
+y=36.0888+1.0310x1-1.8688x2
+anova(modmo1) ##vemos Mean Sq cercana a 0
+## el resultado de Mean Sq (ANOVA)=3.997
+## el p-value=.000006319<.05
+## el valor de F=49.81>1
+## entonces tenemos un mejor modelo, ya que la media de los residuales es mas cercana a 0
