@@ -1,0 +1,32 @@
+corredor<- c( "wall st", "etrade1", "etrade2", "pre trade", "track", "water house", "brown", "br america", 
+              "merrill lynch","strong funds")
+operacion <- c(3.7, 3.4, 2.5, 4.8, 4, 3, 2.7, 1.7, 2.2, 1.4)
+uso <- c(4.5, 3, 4, 3.7, 3.5, 3, 2.5, 3.5, 2.7, 3.6)
+gama <- c(4.8, 4.2, 4, 3.4, 3.2, 4.6, 3.3, 3.1, 3, 2.5)
+estrellas <- c(4, 3.5, 3.5, 3.5, 3.5, 3.5, 3, 3, 2.5, 2)
+bolsa<- data.frame(operacion, uso, gama,estrellas)
+###Aplicamos modelo:
+mbolsa <- lm(estrellas~operacion+uso+gama,data=bolsa)  ##data para decirle de que base
+summary(mbolsa)
+#y=.34510+.25482x1+.13249x2+.45852x3
+step(modmo,direction="backward")
+###  prediccion   ####
+inter<-seq(min(bolsa$uso),max(bolsa$uso),length=length(bolsa$uso))##rango para las variables
+bolpred<-data.frame(gama=3.5,operacion=2.5,uso=inter)
+### genera prediccion  ###
+predi1<-predict(mbolsa,bolpred,interval="prediction",se.fit=TRUE,data=bolsa)
+head(predi1$fit)
+
+##detectar multicolinealidad en el modelo
+##cuando un modelo tiene multicolinealidad en un MRM es cuando una v.i
+##es combinacion lineal de otra v.i
+##si esto es, existe una correlacion entre dos o mas v.i
+##cuando el coef. de correlacion=1
+##para detectar esta colinealidad se estima el factor de inflacion de la varianza(VIF)
+##FIV estado de los predictores
+##FIV=1 no correlacionados 
+## 1<FIV<5 moderadamente correlacionados 
+## FIV>5 a 10 altamente correlacionados
+install.packages("car")
+require(car)
+vif(mbolsa)
