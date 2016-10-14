@@ -1,0 +1,47 @@
+install.packages("foreign")
+require(foreign)
+base<-read.dbf("/Users/alaneduardosuareztorres/Desktop/sdemt216.dbf")
+View(base)
+
+variables<-c("ENT", "EDA", "SEX", "INGOCUP", "HRSOCUP", "ANIOS_ESC", "REMUNE2C")
+base1<-base[,variables]
+
+DF<-subset(base1, (base1$ENT=="09") & (as.numeric(base1$EDA)>=15 & as.numeric(base1$EDA)<66) & (as.numeric(base1$INGOCUP)>=1 & as.numeric(base1$INGOCUP)<=300000) & (as.numeric(base1$REMUNE2C)==1))
+View(DF)
+install.packages("questionr")
+require(questionr)
+wtd.table(base$REMUNE2C,na.show = TRUE)
+wtd.table(DF$REMUNE2C,na.show = TRUE)
+#<NA>=0
+wtd.table(DF$ENT,na.show = TRUE)
+#<NA>=0
+wtd.table(DF$EDA,na.show = TRUE)
+#<NA>=0
+wtd.table(DF$SEX,na.show = TRUE)
+wtd.table(base$SEX,na.show = TRUE)
+#<NA>=0
+wtd.table(DF$INGOCUP,na.show = TRUE)
+wtd.table(base$INGOCUP,na.show = TRUE)
+#<NA>=0
+wtd.table(DF$HRSOCUP,na.show = TRUE)
+wtd.table(base$HRSOCUP,na.show = TRUE)
+#<NA>=0
+wtd.table(DF$ANIOS_ESC,na.show = TRUE)
+wtd.table(base$ANIOS_ESC,na.show = TRUE)
+#<NA>=0
+
+#Como en nuestra base no existen datos NA continuamos con el modelo
+DF$INGOCUP<-as.numeric(as.character(DF$INGOCUP))
+DF$EDA<-as.numeric(as.character(DF$EDA))
+DF$SEX<-as.numeric(as.character(DF$SEX))
+DF$HRSOCUP<-as.numeric(as.character(DF$HRSOCUP))
+DF$ANIOS_ESC<-as.numeric(as.character(DF$ANIOS_ESC))
+class(DF$INGOCUP)
+DF1<-data.frame(DF$INGOCUP, DF$EDA, DF$SEX, DF$HRSOCUP, DF$ANIOS_ESC)
+cor(DF1)
+
+modelo <- lm(INGOCUP~EDA+SEX+HRSOCUP+ANIOS_ESC, data=DF)
+summary(modelo)
+
+step(modelo, direction="backward")
+#Nos da el mismo modelo
